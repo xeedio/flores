@@ -1,10 +1,5 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
-#
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 SRC=si
 TGT=en
@@ -18,6 +13,7 @@ SCRIPTS=$ROOT/scripts
 DATA=$ROOT/data
 TMP=$DATA/wiki_${SRC}_${TGT}_bpe${BPESIZE}
 DATABIN=$ROOT/data-bin/wiki_${SRC}_${TGT}_bpe${BPESIZE}
+rm -rf "$DATABIN"
 mkdir -p $TMP $DATABIN
 
 SRC_TOKENIZER="bash $SCRIPTS/indic_norm_tok.sh $SRC"
@@ -66,8 +62,14 @@ for ((i=0;i<${#URLS[@]};++i)); do
     fi
 done
 
+set -x
 echo "pre-processing train data..."
 bash $SCRIPTS/download_indic.sh
+
+for FILE in "${TRAIN_SETS[@]}"; do
+  $ROOT/dedupe.sh $DATA/$FILE.$SRC $DATA/$FILE.$TGT
+done
+
 for FILE in "${TRAIN_SETS[@]}" ; do
     $SRC_TOKENIZER $DATA/$FILE.$SRC
 done > $TMP/train.$SRC

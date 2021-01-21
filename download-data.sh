@@ -90,7 +90,7 @@ download_opus_data() {
 
     download_data $CORPORA $URL
     unzip -o $CORPORA -d $LANG_ROOT
-    REMOVE_FILE_PATHS+=( $CORPORA $CORPORA.xml $CORPORA.ids $LANG_ROOT/README $LANG_ROOT/LICENSE )
+    REMOVE_FILE_PATHS+=( $CORPORA.xml $CORPORA.ids $LANG_ROOT/README $LANG_ROOT/LICENSE )
   done
 
   cat ${DATASETS[0]}.$SRC ${DATASETS[1]}.$SRC ${DATASETS[2]}.$SRC > $LANG_ROOT/GNOMEKDEUbuntu.$SRC-$TGT.$SRC
@@ -107,18 +107,15 @@ REMOVE_FILE_PATHS+=( ${SI_OPUS_DATASETS[3]}.$SRC ${SI_OPUS_DATASETS[3]}.$SI_TGT 
 
 download_opus_data $NE_ROOT $NE_TGT
 
-
 # Download and extract Global Voices data
 GLOBAL_VOICES="$NE_ROOT/globalvoices.2018q4.ne-en"
-GLOBAL_VOICES_URL="http://www.casmacat.eu/corpus/global-voices/globalvoices.ne-en.xliff.gz"
+GLOBAL_VOICES_URL="http://opus.nlpl.eu/download.php?f=GlobalVoices/v2018q4/moses/en-ne.txt.zip"
 
-download_data $GLOBAL_VOICES.gz $GLOBAL_VOICES_URL
-gunzip -Nf $GLOBAL_VOICES.gz
+download_data $GLOBAL_VOICES.zip $GLOBAL_VOICES_URL
+unzip -p "$GLOBAL_VOICES.zip" GlobalVoices.en-ne.$SRC > $GLOBAL_VOICES.$SRC
+unzip -p "$GLOBAL_VOICES.zip" GlobalVoices.en-ne.$NE_TGT > $GLOBAL_VOICES.$NE_TGT
 
-sed -ne 's?.*<source>\(.*\)</source>.*?\1?p' $GLOBAL_VOICES > $GLOBAL_VOICES.$NE_TGT
-sed -ne 's?.*<target[^>]*>\(.*\)</target>.*?\1?p' $GLOBAL_VOICES > $GLOBAL_VOICES.$SRC
-
-REMOVE_FILE_PATHS+=( $GLOBAL_VOICES )
+#REMOVE_FILE_PATHS+=( $GLOBAL_VOICES.zip )
 
 # Download and extract the bible dataset
 BIBLE_TOOLS=$ROOT/bible-corpus-tools
@@ -148,15 +145,14 @@ cat $XML_BIBLES/aligned/*/English.txt > $NE_ROOT/bible.$SRC-$NE_TGT.$SRC
 cat $XML_BIBLES/aligned/*/Nepali.txt > $NE_ROOT/bible.$SRC-$NE_TGT.$NE_TGT
 cat $XML_BIBLES_DUP/aligned/*/English-WEB.txt > $NE_ROOT/bible_dup.$SRC-$NE_TGT.$SRC
 cat $XML_BIBLES_DUP/aligned/*/Nepali.txt > $NE_ROOT/bible_dup.$SRC-$NE_TGT.$NE_TGT
-REMOVE_FILE_PATHS+=( bible-corpus-1.2.1 bible.tar.gz $BIBLE_TOOLS $XML_BIBLES $XML_BIBLES_DUP )
+REMOVE_FILE_PATHS+=( bible-corpus-1.2.1 $BIBLE_TOOLS $XML_BIBLES $XML_BIBLES_DUP )
 
 
 # Download parallel en-hi corpus
 download_data $DATA/en-hi.tgz "http://www.cfilt.iitb.ac.in/iitb_parallel/iitb_corpus_download/parallel.tgz"
-#download_data $DATA/en-hi.tgz "https://www.cse.iitb.ac.in/~anoopk/share/iitb_en_hi_parallel/iitb_corpus_download/parallel.tgz"
 tar xvzf $DATA/en-hi.tgz
 cp parallel/* $HI_ROOT/
-REMOVE_FILE_PATHS+=( parallel $DATA/en-hi.tgz )
+REMOVE_FILE_PATHS+=( parallel )
 
 
 # Download and extract the Penn Treebank dataset
@@ -200,17 +196,16 @@ NE_DICT=$NE_ROOT/dictionaries
 download_data $NE_DICT "http://www.seas.upenn.edu/~nlp/resources/TACL-data-release/dictionaries.tar.gz"
 tar xvzf $NE_DICT
 cp dictionaries/dict.ne $NE_ROOT/dictionary.$NE_TGT-$SRC
-REMOVE_FILE_PATHS+=( $NE_DICT dictionaries )
+REMOVE_FILE_PATHS+=( dictionaries )
 
 
 # Download test sets
 download_data $DATA/wikipedia_en_ne_si_test_sets.tgz "https://github.com/facebookresearch/flores/raw/master/data/wikipedia_en_ne_si_test_sets.tgz"
-REMOVE_FILE_PATHS+=( $MOSES $NE_TAGGED original.zip $DATA/nepali-penn-treebank.$SRC.patch $DATA/nepali-penn-treebank.$NE_TGT.patch )
+REMOVE_FILE_PATHS+=( $MOSES $NE_TAGGED )
 
 pushd $DATA/
 tar -vxf wikipedia_en_ne_si_test_sets.tgz
 popd
-
 
 # Remove the temporary files
 for ((i=0;i<${#REMOVE_FILE_PATHS[@]};++i)); do

@@ -38,10 +38,15 @@ def train(src, tgt, train_config, savedir, databin):
         return
 
     cuda_visible_devices = list(range(torch.cuda.device_count()))
+    print("CVD: ", cuda_visible_devices)
     num_visible_gpu = len(cuda_visible_devices)
+    print("NVG: ", num_visible_gpu)
     num_gpu = min(train_config['gpu'], 2**int(math.log2(num_visible_gpu)))
+    print("NG: ", num_gpu)
     cuda_devices_clause = f"CUDA_VISIBLE_DEVICES={','.join([str(i) for i in cuda_visible_devices[:num_gpu]])}"
+    print("CDC: ", cuda_devices_clause)
     update_freq = train_config['gpu'] / num_gpu
+    print("Update freq: ", update_freq)
     call(f"""{cuda_devices_clause} fairseq-train {databin} \
         --source-lang {src} --target-lang {tgt} \
         --save-dir {savedir} \
@@ -52,7 +57,7 @@ def train(src, tgt, train_config, savedir, databin):
 
 
 def eval_bleu(src, tgt, subset, lenpen, databin, checkpoint, output, max_token=20000):
-    bleuarg = "--sacrebleu" if tgt == "en" else ""
+    bleuarg = "--scoring sacrebleu" if tgt == "en" else ""
     call(f"""fairseq-generate {databin} \
         --source-lang {src} --target-lang {tgt} \
         --path {checkpoint} \
@@ -70,6 +75,17 @@ def eval_bleu(src, tgt, subset, lenpen, databin, checkpoint, output, max_token=2
 
 def translate(src, tgt, model, lenpen, dest, data, max_token=12000):
     script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'translate.py')
+    print(f"""python {script_path} --data {data}\
+        --source-lang {src} --target-lang {tgt} \
+        --model {model} \
+        --beam 5 --lenpen {lenpen} \
+        --max-len-a 1.8 \
+        --max-len-b 10 \
+        --dest {dest} \
+        --max-token {max_token} \
+        --chunks 100 \
+        --backend local
+    """)
     check_call(f"""python {script_path} --data {data}\
         --source-lang {src} --target-lang {tgt} \
         --model {model} \
@@ -140,6 +156,7 @@ def main():
         if check_last_line(eval_output, "BLEU"):
             print(check_output(f"tail -n 1 {eval_output}", shell=True).decode('utf-8').strip())
         else:
+            print(f"Running eval_bleu {name} iteration, {direction}, databin: {args.databin}")
             print(eval_bleu(
                 config['src'], config['tgt'],
                 'test', lenpen,
@@ -151,12 +168,15 @@ def main():
             break
         # translate
         translate_output = os.path.join(iter_workdir, 'synthetic')
+        print(f"Running translate {name} iteration, {direction}, output: {translate_output}")
         translate(config['src'], config['tgt'], checkpoint_path, lenpen, translate_output, config['translate']['mono'], config['translate']['max_token'])
         # generate databin
         databin_folder = os.path.join(translate_output, 'bt')
+        print(f"Running build_bt_databin {name} iteration, {direction}, databin: {args.databin}, databin_folder: {databin_folder}, output: {translate_output}/generated")
         initial_databin = build_bt_databin(
             config['tgt'], config['src'],
             os.path.join(translate_output, 'generated'), args.databin, databin_folder
         )
+        print(f"End {name} iteration, {direction}")
 
 main()

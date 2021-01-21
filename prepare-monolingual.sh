@@ -44,7 +44,7 @@ mkdir -p $DATA
 
 if ! [[ -f $DATA/mono.sample"$NUM_MONO".en ]]; then
   download_data wikipedia_en_filtered.gz https://dl.fbaipublicfiles.com/fairseq/data/wikipedia.en_filtered.gz
-  REMOVE_FILE_PATHS+=( wikipedia_en_filtered.gz )
+  #REMOVE_FILE_PATHS+=( wikipedia_en_filtered.gz )
   gunzip -c wikipedia_en_filtered.gz > $DATA/mono.en
   cat $DATA/mono.en | ./scripts/shuf.py --seed 42 -n $NUM_MONO > $DATA/mono.sample"$NUM_MONO".en
 fi
@@ -52,7 +52,7 @@ fi
 if ! [[ -f $DATA/mono.sample"$NUM_MONO".ne ]]; then
   download_data wikipedia_ne_filtered.gz https://dl.fbaipublicfiles.com/fairseq/data/wikipedia.ne_filtered.gz
   download_data commoncrawl.deduped.ne.xz http://data.statmt.org/wmt19/parallel-corpus-filtering/commoncrawl.deduped.ne.xz
-  REMOVE_FILE_PATHS+=( wikipedia_ne_filtered.gz commoncrawl.deduped.ne.xz )
+  #REMOVE_FILE_PATHS+=( wikipedia_ne_filtered.gz commoncrawl.deduped.ne.xz )
   gunzip -c wikipedia_ne_filtered.gz > $DATA/mono.ne
   unxz -c commoncrawl.deduped.ne.xz >> $DATA/mono.ne
   cat $DATA/mono.ne | ./scripts/shuf.py --seed 43 -n $NUM_MONO > $DATA/mono.sample"$NUM_MONO".ne
@@ -61,7 +61,7 @@ fi
 if ! [[ -f $DATA/mono.sample"$NUM_MONO".si ]]; then
   download_data wikipedia_si_filtered.gz https://dl.fbaipublicfiles.com/fairseq/data/wikipedia.si_filtered.gz
   download_data commoncrawl.deduped.si.xz http://data.statmt.org/wmt19/parallel-corpus-filtering/commoncrawl.deduped.si.xz
-  REMOVE_FILE_PATHS+=( wikipedia_si_filtered.gz commoncrawl.deduped.si.xz )
+  #REMOVE_FILE_PATHS+=( wikipedia_si_filtered.gz commoncrawl.deduped.si.xz )
   gunzip -c wikipedia_si_filtered.gz > $DATA/mono.si
   unxz -c commoncrawl.deduped.si.xz >> $DATA/mono.si
   cat $DATA/mono.si | ./scripts/shuf.py --seed 44 -n $NUM_MONO > $DATA/mono.sample"$NUM_MONO".si

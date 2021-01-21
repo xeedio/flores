@@ -67,9 +67,13 @@ def translate(arg_list):
 def translate_files_local(args, cmds):
     m = mp.Manager()
     gpu_queue = m.Queue()
-    for i in args.cuda_visible_device_ids:
+    cuda_multiple = 3
+    num_jobs = len(args.cuda_visible_device_ids) * cuda_multiple
+    for i in args.cuda_visible_device_ids * cuda_multiple:
         gpu_queue.put(i)
-    with mp.Pool(processes=len(args.cuda_visible_device_ids)) as pool:
+    print("Pool processes: ", num_jobs)
+    with mp.Pool(processes=num_jobs) as pool:
+        print("Pool: ", pool)
         for _ in tqdm.tqdm(pool.imap_unordered(translate, [(gpu_queue, cmd) for cmd in cmds]), total=len(cmds)):
             pass
 
@@ -84,6 +88,7 @@ def translate_files(args, dest_dir, input_files):
         --max-len-b {args.max_len_b} \
         --buffer-size {args.buffer_size} \
         --max-tokens {args.max_tokens} \
+        --skip-invalid-size-inputs-valid-test \
         --num-workers {args.cpu} > {{output_file}} && \
     echo "finished" >> {{output_file}}
     """
@@ -107,10 +112,10 @@ def main():
     parser.add_argument('--beam', default=5, type=int, help='Beam size')
     parser.add_argument('--max-len-a', type=float, default=0, help='max-len-a parameter when back-translating')
     parser.add_argument('--max-len-b', type=int, default=200, help='max-len-b parameter when back-translating')
-    parser.add_argument('--cpu', type=int, default=4, help='Number of CPU for interactive.py')
+    parser.add_argument('--cpu', type=int, default=12, help='Number of CPU for interactive.py')
     parser.add_argument('--cuda-visible-device-ids', '-gids', default=None, nargs='*', help='List of cuda visible devices ids, camma separated')
     parser.add_argument('--dest', help='Output path for the intermediate and translated file')
-    parser.add_argument('--max-tokens', type=int, default=12000, help='max tokens')
+    parser.add_argument('--max-tokens', type=int, default=4000, help='max tokens')
     parser.add_argument('--buffer-size', type=int, default=10000, help='Buffer size')
     parser.add_argument('--chunks', type=int, default=100)
     parser.add_argument('--source-lang', type=str, default=None, help='Source langauge. Will inference from the model if not set')

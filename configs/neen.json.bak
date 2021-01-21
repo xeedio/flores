@@ -44,7 +44,7 @@
       },
       "translate": {
         "lenpen": 1.5,
-        "max_token": 4000,
+        "max_token": 6000,
         "mono": "data/mono/neen/mono.bpe.ne"
       }
     }
@@ -96,7 +96,7 @@
       },
       "translate": {
         "lenpen": 0.8,
-        "max_token": 4000,
+        "max_token": 6000,
         "mono": "data/mono/neen/mono.bpe.en"
       }
     }
@@ -148,7 +148,7 @@
       },
       "translate": {
         "lenpen": 0.8,
-        "max_token": 4000,
+        "max_token": 6000,
         "mono": "data/mono/neen/mono.bpe.ne"
       }
     }

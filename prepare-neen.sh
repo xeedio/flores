@@ -6,6 +6,8 @@
 #
 #!/bin/bash
 
+set -x
+
 SRC=ne
 TGT=en
 
@@ -18,6 +20,7 @@ SCRIPTS=$ROOT/scripts
 DATA=$ROOT/data
 TMP=$DATA/wiki_${SRC}_${TGT}_bpe${BPESIZE}
 DATABIN=$ROOT/data-bin/wiki_${SRC}_${TGT}_bpe${BPESIZE}
+rm -rf "$DATABIN"
 mkdir -p $TMP $DATABIN
 
 SRC_TOKENIZER="bash $SCRIPTS/indic_norm_tok.sh $SRC"
@@ -71,6 +74,10 @@ done
 
 echo "pre-processing train data..."
 bash $SCRIPTS/download_indic.sh
+for FILE in "${TRAIN_SETS[@]}"; do
+  $ROOT/dedupe.sh $DATA/$FILE.$SRC $DATA/$FILE.$TGT
+done
+
 for FILE in "${TRAIN_SETS[@]}" ; do
     $SRC_TOKENIZER $DATA/$FILE.$SRC
 done > $TMP/train.$SRC
